@@ -66,4 +66,19 @@ Update development.ini and add your key/secret for the google configuration, res
 
 Then in the web browser, hit f1 with http://your.host.com.  
 
+## Setting up appcache during development
 
+Add a mime type for .manifest files to one of your mime type config files. To find out what files
+are used by the dev system, type
+
+    python -c "import mimetypes; print mimetypes.knownfiles"
+
+If using OS X, Snow Leopard, then use /etc/apache2/mime.types and add this line to it:
+
+    text/cache-manifest                             manifest
+
+The items in that file are in alphabetic order, so it is suggested to place the above line in the text/ area of the file.
+
+You can confirm it is working by asking for **/share/appcache.manifest** and confirming that the HTTP response header looks like:
+
+    Content-Type: text/cache-manifest

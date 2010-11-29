@@ -46,7 +46,9 @@ var FFSHARE_EXT_ID = "ffshare@mozilla.org";
   var slice = Array.prototype.slice,
       ostring = Object.prototype.toString,
       empty = {}, fn,
-      buttonId = 'ffshare-toolbar-button';
+      buttonId = 'ffshare-toolbar-button',
+      Cc = Components.classes,
+      Ci = Components.interfaces;
 
   function getButton() {
     return document.getElementById(buttonId);
@@ -640,6 +642,34 @@ var FFSHARE_EXT_ID = "ffshare@mozilla.org";
         }
       }
       catch (e) {}
+
+      //Add F1 as an allowed offline cache user, if it is not already there
+      //or explicitly blocked.
+      var pm = Cc["@mozilla.org/permissionmanager;1"]
+               .getService(Ci.nsIPermissionManager),
+          iOService = Cc["@mozilla.org/network/io-service;1"]
+                      .getService(Ci.nsIIOService),
+          enumerator = pm.enumerator,
+          appCacheState = 'missing';
+
+      while (enumerator.hasMoreElements()) {
+        var perm = enumerator.getNext().QueryInterface(Ci.nsIPermission);
+        if (perm.type === "offline-app" &&
+            ffshare.shareUrl.indexOf(perm.host) !== -1 &&
+            perm.capability !== Ci.nsIPermissionManager.DEFAULT_ACTION) {
+          if (perm.capability === Ci.nsIPermissionManager.DENY_ACTION) {
+            appCacheState = 'denied';
+          } else {
+            appCacheState = 'found';
+          }
+          break;
+        }
+      }
+
+      if (appCacheState === 'missing') {
+        pm.add(iOService.newURI(ffshare.shareUrl, null, null), "offline-app",
+                                Ci.nsIPermissionManager.ALLOW_ACTION);
+      }
 
       if (ffshare.firstRun) {
         //Make sure to set the pref first to avoid bad things if later code
