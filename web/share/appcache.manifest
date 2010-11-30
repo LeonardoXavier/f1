@@ -1,0 +1,9 @@
+CACHE MANIFEST
+
+CACHE:
+index.html
+share.css
+../scripts/requireplugins-jquery-1.4.2.js
+
+NETWORK:
+../api/
